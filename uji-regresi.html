@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uji Regresi FU-PEGON</title>
+<style>body{font:16px system-ui;background:#f2f7f7;color:#153740;margin:0;line-height:1.5}header{background:#104650;color:white;padding:18px 5%}header a{color:white}main{max-width:1040px;margin:24px auto;padding:0 14px}.card{background:white;padding:20px;border:1px solid #cddfe0;border-radius:16px;margin:16px 0}table{border-collapse:collapse;width:100%;font-size:14px}td,th{padding:10px;border-bottom:1px solid #d6e2e4;text-align:left;vertical-align:top}th{background:#e8f0f0}button{padding:10px 16px;border:0;border-radius:9px;background:#126a78;color:white;cursor:pointer;margin:6px 6px 6px 0}textarea{width:100%;box-sizing:border-box;padding:12px;min-height:85px}input{width:100%;box-sizing:border-box;padding:9px}.rtl{direction:rtl;font-size:24px;white-space:nowrap}.small{font-size:13px;color:#587079}.warn{border-left:4px solid #b7791f;background:#fff5d9;padding:12px}.pass{color:#14734d;font-weight:700}.hold{color:#9d5b06;font-weight:700}@media(max-width:650px){table{font-size:12px}td,th{padding:5px}} </style></head>
+<body><header><a href="./konverter.html">← Konverter</a> · <a href="./index.html">Beranda</a></header>
+<main><h1>Pengujian Regresi FU-PEGON</h1><p class="warn">Lembar bukti manual: masukkan hasil aktual dari konverter dan baseline lama. Nilai 'sesuai' berarti cocok secara teknis dengan keluaran yang dicatat, <b>bukan</b> validasi linguistik. Jangan masukkan data mahasiswa atau informasi pribadi.</p>
+<div class="card"><h2>Kasus uji vokal</h2><p class="small">Sumber: Kamus 16 Okt 2026 dan keputusan peneliti 30 Okt 2026. Untuk petak/pemantik hanya awalan yang dibandingkan.</p>
+<div style="overflow:auto"><table><thead><tr><th>ID</th><th>Input dan konteks</th><th>Ekspektasi</th><th>GitHub aktual (tempel)</th><th>Baseline lama (opsional)</th><th>Banding</th></tr></thead><tbody id="cases"></tbody></table></div>
+<button id="evaluate">Bandingkan masukan</button><button id="export">Ekspor bukti CSV</button><p id="status" role="status"></p></div>
+<div class="card"><h2>Informasi pelaksanaan</h2><label>Versi aplikasi/commit GitHub <input id="version" value="Isi commit yang diuji"></label><label>Catatan perangkat / browser <input id="device" placeholder="Contoh: Chrome Windows"></label><p class="small">CSV disimpan lokal di perangkat Anda; tidak ada data yang dikirim ke server melalui halaman ini. Kode ini hanya lembar pencatat dan bukan otomatisasi eksekusi aplikasi lama.</p></div></main>
+<script>
+const tests=[
+['VOC-01','Serang — nama kota','سيۤراڠ','exact'],
+['VOC-02','serang — kata kerja','ساۤراڠ','exact'],
+['VOC-03','se — pola dasar','ساۤ','exact'],
+['VOC-04','te — pola dasar','تاۤ','exact'],
+['VOC-05','pe — pola dasar','ڤاۤ','exact'],
+['VOC-06','pengarang','ڤاۤڠاراڠ','exact'],
+['VOC-07','pemantik — periksa awalan','ڤاۤ','prefix'],
+['VOC-08','petak — periksa awalan','ڤيۤ','prefix'],
+['VOC-09','tes','تيس','exact']
+];
+const tb=document.getElementById('cases');
+tests.forEach((t,i)=>{const tr=document.createElement('tr');tr.innerHTML='<td>'+t[0]+'</td><td>'+t[1]+'</td><td class="rtl">'+t[2]+'</td><td><input aria-label="GitHub aktual '+t[0]+'" id="new'+i+'"></td><td><input aria-label="Baseline lama '+t[0]+'" id="old'+i+'"></td><td id="check'+i+'">Belum diuji</td>';tb.appendChild(tr)});
+const result=(t,value)=>!value.trim()?'BELUM DIUJI':(t[3]==='prefix'?value.normalize('NFC').startsWith(t[2].normalize('NFC')):value.normalize('NFC')===t[2].normalize('NFC'))?'SESUAI TEKNIS':'BERBEDA';
+document.getElementById('evaluate').onclick=()=>{tests.forEach((t,i)=>{const v=result(t,document.getElementById('new'+i).value);const e=document.getElementById('check'+i);e.textContent=v;e.className=v==='SESUAI TEKNIS'?'pass':'hold'});document.getElementById('status').textContent='Perbandingan diperbarui. Validasi linguistik tetap HOLD.'};
+function csvquote(v){return '"'+String(v??'').replaceAll('"','""')+'"'}
+document.getElementById('export').onclick=()=>{document.getElementById('evaluate').click();const data=[['id','input_konteks','expected_unicode','jenis_pembanding','github_actual','baseline_actual','status_technical','app_commit','device','timestamp_utc','linguistic_validation'],...tests.map((t,i)=>[t[0],t[1],t[2],t[3],document.getElementById('new'+i).value,document.getElementById('old'+i).value,document.getElementById('check'+i).textContent,document.getElementById('version').value,document.getElementById('device').value,new Date().toISOString(),'HOLD'])];const csv='\ufeff'+data.map(row=>row.map(csvquote).join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='FU-PEGON_regresi_'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+</script></body></html>
