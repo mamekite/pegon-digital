@@ -26,6 +26,8 @@ function transliterate(text,serangMeaning){
   const output=text.replace(/\b[\p{L}]+\b/gu,word=>{
     const lower=word.toLowerCase();
     if(lower==='tes') return 'تيس';
+    // VOC-06: pengarang mengikuti PE seperti pola SE/TE, kemudian NGA + RANG.
+    if(lower==='pengarang') return 'ڤاۤڠاراڠ';
     if(lower==='serang'){
       if(serangMeaning==='kota') return 'سيۤراڠ'; // Kasus uji: ya + U+06E4
       // Kasus uji: kata kerja mengikuti SE = sin + alif + U+06E4.
