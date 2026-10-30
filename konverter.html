@@ -13,7 +13,7 @@
 <h1>Konverter Latin–Pegon</h1>
 <p>Prototipe uji antarmuka dan penyalinan Unicode. <strong>Ini belum memuat seluruh kamus FU-PEGON.</strong></p>
 <p class="notice"><strong>Status: Eksperimental.</strong> Pemetaan huruf pada contoh ini bukan validasi linguistik. Vokal e (taling/pepet) dan kombinasi bunyi yang memerlukan keputusan kontekstual tetap HOLD. Jangan gunakan hasil sebagai kunci jawaban mahasiswa.</p>
-<div class="box"><label for="latin">Teks Latin</label><textarea id="latin" placeholder="Masukkan teks untuk menguji fungsi salin hasil...">saku ku</textarea><div class="choice" id="serang-choice" hidden><label for="serang-meaning">Kata “serang” terdeteksi. Pilih makna sebelum konversi:</label><select id="serang-meaning"><option value="">— Pilih makna —</option><option value="kota">Serang (kota) — alif + tanda ۤ</option><option value="kerja">serang (kata kerja) — pola SE (alif + tanda ۤ)</option></select><small>Pilihan berlaku untuk semua kemunculan kata “serang” pada teks ini. Ejaan Pegon masih prototipe dan memerlukan pemeriksaan.</small></div><button id="convert">Uji konversi dasar</button><button id="clear" class="secondary">Kosongkan</button></div>
+<div class="box"><label for="latin">Teks Latin</label><textarea id="latin" placeholder="Masukkan teks untuk menguji fungsi salin hasil...">saku ku</textarea><div class="choice" id="serang-choice" hidden><label for="serang-meaning">Kata “serang” terdeteksi. Pilih makna sebelum konversi:</label><select id="serang-meaning"><option value="">— Pilih makna —</option><option value="kota">Serang (kota) — alif tanpa tanda pepet</option><option value="kerja">serang (kata kerja) — pola SE (alif + tanda ۤ)</option></select><small>Pilihan berlaku untuk semua kemunculan kata “serang” pada teks ini. Ejaan Pegon masih prototipe dan memerlukan pemeriksaan.</small></div><button id="convert">Uji konversi dasar</button><button id="clear" class="secondary">Kosongkan</button></div>
 <div class="box"><label for="pegon">Hasil Unicode (contoh sementara)</label><textarea id="pegon" class="pegon" readonly lang="ar" dir="rtl" placeholder="Hasil muncul di sini"></textarea><button id="copy" disabled>Salin hasil Pegon</button><p id="status" aria-live="polite"></p><p id="test-case" class="notice" hidden></p></div>
 <p><small>Untuk memigrasikan konverter versi penelitian secara setia, ganti fungsi <code>transliterate()</code> dengan algoritma dan tabel Unicode dari sumber konverter sebelumnya, setelah pengujian regresi.</small></p>
 </main>
@@ -27,7 +27,7 @@ function transliterate(text,serangMeaning){
     const lower=word.toLowerCase();
     if(lower==='tes') return 'تيس';
     if(lower==='serang'){
-      if(serangMeaning==='kota') return 'ساۤراڠ'; // Kasus uji: alif + U+06E4
+      if(serangMeaning==='kota') return 'ساراڠ'; // Kasus uji: alif tanpa U+06E4
       // Kasus uji: kata kerja mengikuti SE = sin + alif + U+06E4.
       return 'ساۤراڠ';
     }
@@ -66,7 +66,7 @@ $('convert').addEventListener('click',()=>{
   const result=transliterate($('latin').value,$('serang-meaning').value);
   $('pegon').value=result.output;
   $('test-case').hidden=!hasSerang();
-  if(hasSerang()) $('test-case').textContent='Kasus uji FU-PEGON/SERANG-01: konteks '+($('serang-meaning').value==='kota'?'nama kota':'kata kerja')+'; keluaran '+result.output+'; kedua konteks sementara menghasilkan rangkaian Unicode yang sama. Status: implementasi diuji, bukan validasi linguistik.';
+  if(hasSerang()) $('test-case').textContent='Kasus uji FU-PEGON/SERANG-01: konteks '+($('serang-meaning').value==='kota'?'nama kota':'kata kerja')+'; keluaran '+result.output+'; kedua konteks memiliki keluaran berbeda berdasarkan ada/tidaknya U+06E4. Status: implementasi diuji, bukan validasi linguistik.';
   $('copy').disabled=result.unresolved||!result.output;
   $('status').textContent=result.unresolved?'Ada vokal e yang belum disahkan. Penyalinan dinonaktifkan untuk hasil HOLD.':'Hasil prototipe; periksa kembali kesesuaian dengan kamus FU-PEGON.';
 });
