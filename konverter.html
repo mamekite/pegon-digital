@@ -28,9 +28,8 @@ function transliterate(text,serangMeaning){
     if(lower==='tes') return 'تيس';
     if(lower==='serang'){
       if(serangMeaning==='kota') return 'سيرانڠ'; // Usulan e taling; perlu uji kamus
-      // E pepet belum dipetakan ke Unicode yang disetujui.
-      unresolved=true;
-      return 'س⟦ê pepet: HOLD⟧راڠ';
+      // Kata kerja 'serang': e pepet tidak ditandai dengan diakritik.
+      return 'سراڠ';
     }
     const digraphs=lower.replace(/ng/g,'ڠ').replace(/ny/g,'ڽ');
     return [...digraphs].map((ch,i,chars)=>{
