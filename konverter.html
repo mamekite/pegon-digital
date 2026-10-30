@@ -23,6 +23,9 @@ const basic={b:'ب',c:'چ',d:'د',f:'ف',g:'ڮ',j:'ج',k:'ك',l:'ل',m:'م',n:'�
 // DEMO ONLY. Not a phonological or full spelling converter.
 function transliterate(text){
   return text.replace(/\b[\p{L}]+\b/gu,word=>{
+    // Keputusan spesifik: 'tes' ditulis tanpa tanda pepet.
+    // Tidak mengubah status HOLD untuk e pada kata-kata lain.
+    if(word.toLowerCase()==='tes') return 'تيس';
     const chars=[...word.toLowerCase()];
     return chars.map((ch,i)=>{
       if(ch==='h') return i===chars.length-1?'ح':'ه';
