@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Konverter Latin–Pegon | Pegon Digital</title>
 <style>
-:root{font-family:system-ui,'Segoe UI',sans-serif;color:#17333c;background:#f3f7f7}*{box-sizing:border-box}body{margin:0}header{padding:18px 5%;background:#103f48;color:#fff}header a{color:#fff}main{max-width:900px;margin:35px auto;padding:0 18px}h1{margin-bottom:5px}p{line-height:1.6}.box{background:#fff;border:1px solid #d8e6e6;border-radius:16px;padding:22px;margin:18px 0}label{display:block;font-weight:700;margin-bottom:8px}textarea{display:block;width:100%;min-height:160px;border:1px solid #b6c8cc;border-radius:10px;padding:14px;font:1rem system-ui;resize:vertical}.pegon{direction:rtl;text-align:right;font-family:'Noto Naskh Arabic','Amiri','Scheherazade New',serif;font-size:2rem;line-height:2.1}button{border:0;border-radius:10px;background:#126a78;color:white;padding:12px 16px;font-weight:700;cursor:pointer;margin:12px 8px 2px 0}button.secondary{background:#e4f1f1;color:#145362}.notice{background:#fff9e7;padding:13px 16px;border-left:4px solid #c59821;border-radius:8px}#status{min-height:1.5em;color:#296574}small{color:#526a6c}
+:root{font-family:system-ui,'Segoe UI',sans-serif;color:#17333c;background:#f3f7f7}*{box-sizing:border-box}body{margin:0}header{padding:18px 5%;background:#103f48;color:#fff}header a{color:#fff}main{max-width:900px;margin:35px auto;padding:0 18px}h1{margin-bottom:5px}p{line-height:1.6}.box{background:#fff;border:1px solid #d8e6e6;border-radius:16px;padding:22px;margin:18px 0}label{display:block;font-weight:700;margin-bottom:8px}textarea{display:block;width:100%;min-height:160px;border:1px solid #b6c8cc;border-radius:10px;padding:14px;font:1rem system-ui;resize:vertical}.pegon{direction:rtl;text-align:right;font-family:'Noto Naskh Arabic','Amiri','Scheherazade New',serif;font-size:2rem;line-height:2.1}button{border:0;border-radius:10px;background:#126a78;color:white;padding:12px 16px;font-weight:700;cursor:pointer;margin:12px 8px 2px 0}button.secondary{background:#e4f1f1;color:#145362}.notice{background:#fff9e7;padding:13px 16px;border-left:4px solid #c59821;border-radius:8px}#status{min-height:1.5em;color:#296574}.choice{padding:14px;background:#eaf4f5;border-radius:10px;margin-top:14px}.choice select{display:block;width:100%;margin-top:8px;padding:10px;font-size:1rem;border-radius:8px;border:1px solid #adc4c6}.choice[hidden]{display:none}button:disabled{opacity:.45;cursor:not-allowed}small{color:#526a6c}
 </style>
 </head>
 <body>
@@ -13,34 +13,66 @@
 <h1>Konverter Latin–Pegon</h1>
 <p>Prototipe uji antarmuka dan penyalinan Unicode. <strong>Ini belum memuat seluruh kamus FU-PEGON.</strong></p>
 <p class="notice"><strong>Status: Eksperimental.</strong> Pemetaan huruf pada contoh ini bukan validasi linguistik. Vokal e (taling/pepet) dan kombinasi bunyi yang memerlukan keputusan kontekstual tetap HOLD. Jangan gunakan hasil sebagai kunci jawaban mahasiswa.</p>
-<div class="box"><label for="latin">Teks Latin</label><textarea id="latin" placeholder="Masukkan teks untuk menguji fungsi salin hasil...">saku ku</textarea><button id="convert">Uji konversi dasar</button><button id="clear" class="secondary">Kosongkan</button></div>
-<div class="box"><label for="pegon">Hasil Unicode (contoh sementara)</label><textarea id="pegon" class="pegon" readonly lang="ar" dir="rtl" placeholder="Hasil muncul di sini"></textarea><button id="copy">Salin hasil Pegon</button><p id="status" aria-live="polite"></p></div>
+<div class="box"><label for="latin">Teks Latin</label><textarea id="latin" placeholder="Masukkan teks untuk menguji fungsi salin hasil...">saku ku</textarea><div class="choice" id="serang-choice" hidden><label for="serang-meaning">Kata “serang” terdeteksi. Pilih makna sebelum konversi:</label><select id="serang-meaning"><option value="">— Pilih makna —</option><option value="kota">Serang (kota) — e taling</option><option value="kerja">serang (kata kerja) — e pepet</option></select><small>Pilihan berlaku untuk semua kemunculan kata “serang” pada teks ini. Ejaan Pegon masih prototipe dan memerlukan pemeriksaan.</small></div><button id="convert">Uji konversi dasar</button><button id="clear" class="secondary">Kosongkan</button></div>
+<div class="box"><label for="pegon">Hasil Unicode (contoh sementara)</label><textarea id="pegon" class="pegon" readonly lang="ar" dir="rtl" placeholder="Hasil muncul di sini"></textarea><button id="copy" disabled>Salin hasil Pegon</button><p id="status" aria-live="polite"></p></div>
 <p><small>Untuk memigrasikan konverter versi penelitian secara setia, ganti fungsi <code>transliterate()</code> dengan algoritma dan tabel Unicode dari sumber konverter sebelumnya, setelah pengujian regresi.</small></p>
 </main>
 <script>
 'use strict';
 const basic={b:'ب',c:'چ',d:'د',f:'ف',g:'ڮ',j:'ج',k:'ك',l:'ل',m:'م',n:'ن',p:'ڤ',q:'ق',r:'ر',s:'س',t:'ت',v:'ڤ',w:'و',y:'ي',z:'ز'};
 // DEMO ONLY. Not a phonological or full spelling converter.
-function transliterate(text){
-  return text.replace(/\b[\p{L}]+\b/gu,word=>{
-    // Keputusan spesifik: 'tes' ditulis tanpa tanda pepet.
-    // Tidak mengubah status HOLD untuk e pada kata-kata lain.
-    if(word.toLowerCase()==='tes') return 'تيس';
-    const chars=[...word.toLowerCase()];
-    return chars.map((ch,i)=>{
-      if(ch==='h') return i===chars.length-1?'ح':'ه';
-      if(ch==='e') return '⟦e?⟧';
-      if(ch==='a') return 'ا';
-      if(ch==='i') return 'ي';
-      if(ch==='u'||ch==='o') return 'و';
-      if(ch==='x') return 'كس';
+function transliterate(text,serangMeaning){
+  let unresolved=false;
+  const output=text.replace(/\b[\p{L}]+\b/gu,word=>{
+    const lower=word.toLowerCase();
+    if(lower==='tes') return 'تيس';
+    if(lower==='serang'){
+      if(serangMeaning==='kota') return 'سيرانڠ'; // Usulan e taling; perlu uji kamus
+      // E pepet belum dipetakan ke Unicode yang disetujui.
+      unresolved=true;
+      return 'س⟦ê pepet: HOLD⟧راڠ';
+    }
+    const digraphs=lower.replace(/ng/g,'ڠ').replace(/ny/g,'ڽ');
+    return [...digraphs].map((ch,i,chars)=>{
+      if(ch==='ه'||ch==='ح')return ch;
+      if(ch==='ڠ'||ch==='ڽ')return ch;
+      if(ch==='h')return i===chars.length-1?'ح':'ه';
+      if(ch==='e'){unresolved=true;return '⟦e?: HOLD⟧';}
+      if(ch==='a')return 'ا';
+      if(ch==='i')return 'ي';
+      if(ch==='u'||ch==='o')return 'و';
+      if(ch==='x')return 'كس';
       return basic[ch]??ch;
     }).join('');
   });
+  return {output,unresolved};
 }
 const $=id=>document.getElementById(id);
-$('convert').addEventListener('click',()=>{$('pegon').value=transliterate($('latin').value);$('status').textContent='Hasil contoh dibuat. Belum tervalidasi secara linguistik.'});
-$('clear').addEventListener('click',()=>{$('latin').value='';$('pegon').value='';$('status').textContent='';});
+const hasSerang=()=>/\bserang\b/i.test($('latin').value);
+function refreshChoice(){
+  const present=hasSerang();
+  $('serang-choice').hidden=!present;
+  if(!present)$('serang-meaning').value='';
+  $('copy').disabled=true;
+  $('pegon').value='';
+}
+$('latin').addEventListener('input',refreshChoice);
+$('serang-meaning').addEventListener('change',()=>{$('pegon').value='';$('copy').disabled=true;});
+$('convert').addEventListener('click',()=>{
+  if(hasSerang()&&!$('serang-meaning').value){
+    $('status').textContent='Pilih makna Serang terlebih dahulu.';
+    $('copy').disabled=true;return;
+  }
+  const result=transliterate($('latin').value,$('serang-meaning').value);
+  $('pegon').value=result.output;
+  $('copy').disabled=result.unresolved||!result.output;
+  $('status').textContent=result.unresolved?'Ada vokal e yang belum disahkan. Penyalinan dinonaktifkan untuk hasil HOLD.':'Hasil prototipe; periksa kembali kesesuaian dengan kamus FU-PEGON.';
+});
+$('clear').addEventListener('click',()=>{
+  $('latin').value='';$('pegon').value='';$('status').textContent='';
+  $('serang-meaning').value='';refreshChoice();
+});
+refreshChoice();
 $('copy').addEventListener('click',async()=>{
   const value=$('pegon').value;
   if(!value){$('status').textContent='Belum ada hasil untuk disalin.';return;}
